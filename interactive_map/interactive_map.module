@@ -10,8 +10,6 @@
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\Entity\Node;
 
-
-
 /**
  * Implements hook_help().
  */
@@ -48,9 +46,6 @@ function interactive_map_form_alter(&$form, \Drupal\Core\Form\FormStateInterface
       && $entity->bundle() == 'image_map_content'
     ) {
 
-
-
-
       //We want to pass over some variables to our JS code that way it can easily display the right classes
       //inside of the field_regions dropdown menu
 
@@ -72,7 +67,11 @@ function interactive_map_form_alter(&$form, \Drupal\Core\Form\FormStateInterface
         foreach( $searchNode as $search ) {
           //Get all the class="__" attributes from the <areas>
           $class_name = $search->getAttribute('class');
-          if ($class_name != "") {
+          /*Make sure that the class name isn't blank and that the class isn't already inside of the array.
+           *Duplicates don't hurt the functionality of the program but it does make the dropdown menu more confusing
+           *for users to work with.
+           */
+          if ($class_name != "" && !in_array($class_name,$attatched_settings['regions'][strval($node->id())])) {
             array_push($attatched_settings['regions'][strval($node->id())],$class_name);
           }
         }
@@ -107,10 +106,7 @@ function interactive_map_form_alter(&$form, \Drupal\Core\Form\FormStateInterface
  use Drupal\field\Entity\FieldStorageConfig;
 
 function interactive_map_allowed_values_function(FieldStorageConfig $definition, ContentEntityInterface $entity = NULL, $cacheable) {
-  $options = [
-    'left' => 'Left',
-    'right' => 'Right',
-  ];
+  $options = [];
 
   //Get all Image Map node IDs.
   $query = \Drupal::entityTypeManager()->getStorage('node')->getQuery();
@@ -187,8 +183,7 @@ function interactive_map_theme($existing, $type, $theme, $path) {
       'base hook' => 'node',
       'path' => drupal_get_path('module','interactive_map') . '/templates',
       'variables' => [
-          'description' => "Test",
-          'test' => "Test",
+          'description' => "",
       ]
     ],
   ];
