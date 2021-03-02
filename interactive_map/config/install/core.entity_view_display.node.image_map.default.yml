@@ -1,0 +1,56 @@
+# @Author: Parker Schmitt <parker>
+# @Date:   26-Feb-2021
+# @Email:  parker.c.schmitt@gmail.com
+# @Filename: core.entity_view_display.node.image_map.default.yml
+# @Last modified by:   parker
+# @Last modified time: 26-Feb-2021
+
+
+
+uuid: af06a724-d405-48a4-abab-df6cefd73959
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.image_map.body
+    - field.field.node.image_map.field_image
+    - field.field.node.image_map.field_map_markup
+    - node.type.image_map
+  module:
+    - image
+    - text
+    - user
+id: node.image_map.default
+targetEntityType: node
+bundle: image_map
+mode: default
+content:
+  body:
+    label: hidden
+    type: text_default
+    weight: 101
+    settings: {  }
+    third_party_settings: {  }
+    region: content
+  field_image:
+    weight: 102
+    label: above
+    settings:
+      image_style: ''
+      image_link: ''
+    third_party_settings: {  }
+    type: image
+    region: content
+  field_map_markup:
+    weight: 103
+    label: above
+    settings: {  }
+    third_party_settings: {  }
+    type: basic_string
+    region: content
+  links:
+    weight: 100
+    settings: {  }
+    third_party_settings: {  }
+    region: content
+hidden: {  }

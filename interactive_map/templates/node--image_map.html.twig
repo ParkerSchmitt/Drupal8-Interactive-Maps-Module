@@ -1,0 +1,19 @@
+{{node.body.value | raw }}
+<img src="{{ file_url(node.field_image.entity.uri.value) }}" alt="{{ node.field_image.alt }}" usemap="#{{ image_map_mapname }}"/>
+
+{{node.field_map_markup.value | raw }}
+
+<h1> Resources </h1>
+
+<ul class="toggle-list">
+  {% for image_map_node in image_map_content_nodes %}
+    <li class="toggle-list-title">
+      <h3 id= "{{image_map_node.field_region.value}}"> {{ image_map_node.title.value }} </h3>
+      <ul>
+        <li>
+           {{ image_map_node.body.value | raw}}
+        </li>
+      </ul>
+    </li>
+  {% endfor %}
+</ul>

@@ -1,0 +1,34 @@
+# @Author: Parker Schmitt <parker>
+# @Date:   23-Feb-2021
+# @Email:  parker.c.schmitt@gmail.com
+# @Filename: field.field.node.image_map_content.field_map_reference.yml
+# @Last modified by:   parker
+# @Last modified time: 26-Feb-2021
+
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_map_reference
+    - node.type.image_map
+    - node.type.image_map_content
+id: node.image_map_content.field_map_reference
+field_name: field_map_reference
+entity_type: node
+bundle: image_map_content
+label: Map Reference
+description: 'Select which Image Map this content belongs to.'
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings:
+  handler: 'default:node'
+  handler_settings:
+    target_bundles:
+      image_map: image_map
+    sort:
+      field: _none
+    auto_create: false
+    auto_create_bundle: ''
+field_type: entity_reference

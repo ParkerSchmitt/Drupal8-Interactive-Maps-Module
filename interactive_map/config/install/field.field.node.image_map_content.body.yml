@@ -1,0 +1,31 @@
+# @Author: Parker Schmitt <parker>
+# @Date:   19-Feb-2021
+# @Email:  parker.c.schmitt@gmail.com
+# @Filename: field.field.node.image_map_content.body.yml
+# @Last modified by:   parker
+# @Last modified time: 26-Feb-2021
+
+# for creating BODY in content type US MAP CONTENT
+
+# field.field.node.image_map_content.body.yml
+langcode: en
+status: true
+dependencies:
+    config:
+        - field.storage.node.body
+        - node.type.image_map_content
+    module:
+        - text
+id: node.image_map_content.body
+field_name: body
+entity_type: node
+bundle: image_map_content
+label: Body
+description: 'Add information that displays when you click on a state.'
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+    display_summary: true
+field_type: text_with_summary

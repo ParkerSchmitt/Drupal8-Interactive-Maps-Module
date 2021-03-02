@@ -1,0 +1,30 @@
+# @Author: Parker Schmitt <parker>
+# @Date:   23-Feb-2021
+# @Email:  parker.c.schmitt@gmail.com
+# @Filename: field.storage.node.field_map_reference.yml
+# @Last modified by:   parker
+# @Last modified time: 26-Feb-2021
+
+
+
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+  enforced:
+    module:
+      - interactive_map
+id: node.field_map_reference
+field_name: field_map_reference
+entity_type: node
+type: entity_reference
+settings:
+  target_type: node
+module: core
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

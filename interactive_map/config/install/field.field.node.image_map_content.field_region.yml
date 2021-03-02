@@ -1,0 +1,26 @@
+# @Author: Parker Schmitt <parker>
+# @Date:   26-Feb-2021
+# @Email:  parker.c.schmitt@gmail.com
+# @Filename: field.field.node.image_map_content.field_region.yml
+# @Last modified by:   parker
+# @Last modified time: 26-Feb-2021
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_region
+    - node.type.image_map_content
+  module:
+    - options
+id: node.image_map_content.field_region
+field_name: field_region
+entity_type: node
+bundle: image_map_content
+label: Region
+description: ''
+required: true
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: list_string

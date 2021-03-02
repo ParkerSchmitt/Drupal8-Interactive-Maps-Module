@@ -1,0 +1,31 @@
+# @Author: Parker Schmitt <parker>
+# @Date:   19-Feb-2021
+# @Email:  parker.c.schmitt@gmail.com
+# @Filename: field.field.node.image_map_content.body.yml
+# @Last modified by:   parker
+# @Last modified time: 25-Feb-2021
+
+# for creating FIELD_MAP_MARKUP in content type US MAP
+
+# field.field.node.image_map.field_map_markup.yml
+langcode: en
+status: true
+dependencies:
+    config:
+        - field.storage.node.field_map_markup
+        - node.type.image_map
+    module:
+        - text
+id: node.image_map.field_map_markup
+field_name: field_map_markup
+entity_type: node
+bundle: image_map
+label: Map Markup
+description: 'Add markup for map (define regions for individals to click on). Image maps can be created with tools such as https://summerstyle.github.io/summer/ or manually. Add a class attribute to each area to specify region.'
+required: true
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+    display_summary: true
+field_type: string_long

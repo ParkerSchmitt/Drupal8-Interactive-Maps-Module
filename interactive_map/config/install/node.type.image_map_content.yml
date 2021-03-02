@@ -1,0 +1,24 @@
+# @Author: Parker Schmitt <parker>
+# @Date:   19-Feb-2021
+# @Email:  parker.c.schmitt@gmail.com
+# @Filename: node.type.image_map_content.yml
+# @Last modified by:   parker
+# @Last modified time: 26-Feb-2021
+
+
+# for creating content type US MAP CONTENT
+
+# node.type.image_map_content.yml
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - interactive_map 
+name: 'Interactive Map Content'
+type: image_map_content
+description: 'Content type that can be used to provide information on interactive maps.'
+help: ''
+new_revision: false
+preview_mode: 1
+display_submitted: true

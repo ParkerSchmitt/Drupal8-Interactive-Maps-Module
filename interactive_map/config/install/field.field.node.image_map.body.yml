@@ -1,0 +1,28 @@
+# @Author: Parker Schmitt <parker>
+# @Date:   26-Feb-2021
+# @Email:  parker.c.schmitt@gmail.com
+# @Filename: field.field.node.image_map.body.yml
+# @Last modified by:   parker
+# @Last modified time: 26-Feb-2021
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.body
+    - node.type.image_map
+  module:
+    - text
+id: node.image_map.body
+field_name: body
+entity_type: node
+bundle: image_map
+label: Body
+description: ''
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+  display_summary: true
+  required_summary: false
+field_type: text_with_summary

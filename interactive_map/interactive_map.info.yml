@@ -1,0 +1,16 @@
+# @Author: Parker Schmitt <parker>
+# @Date:   19-Feb-2021
+# @Email:  parker.c.schmitt@gmail.com
+# @Filename: interactive_map.info.yml
+# @Last modified by:   parker
+# @Last modified time: 26-Feb-2021
+
+
+
+name: Interactive Map
+type: module
+description: Creation/editing of interactive image maps with Drupal
+package: KSU
+core: 8.x
+dependencies:
+  - node

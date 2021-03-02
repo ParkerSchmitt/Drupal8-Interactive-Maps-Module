@@ -1,0 +1,31 @@
+# @Author: Parker Schmitt <parker>
+# @Date:   19-Feb-2021
+# @Email:  parker.c.schmitt@gmail.com
+# @Filename: field.storage.node.field_map_markup.yml
+# @Last modified by:   parker
+# @Last modified time: 26-Feb-2021
+
+# for creating a new fieldtype LONG TEXT called field_map_markup
+
+# field.storage.node.field_map_markup.yml
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+    - text
+  enforced:
+    module:
+      - interactive_map
+id: node.field_map_markup
+field_name: field_map_markup
+entity_type: node
+type: string_long
+settings: {  }
+module: text
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

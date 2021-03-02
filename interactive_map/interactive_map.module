@@ -1,0 +1,195 @@
+<?php
+# @Author: Parker Schmitt <parker>
+# @Date:   23-Feb-2021
+# @Email:  parker.c.schmitt@gmail.com
+# @Filename: interactive_map.module
+# @Last modified by:   parker
+# @Last modified time: 02-Mar-2021
+
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\Entity\Node;
+
+
+
+/**
+ * Implements hook_help().
+ */
+function interactive_map_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.interactive_map':
+
+
+      return t('
+        <h2>Interactive Map Generator</h2>
+        <h3>Instructions</h3>
+        <p>Once installed two content types will be created, Image Map Content and Image Map.</p>
+        <p>Define an Image Map first, using an image and map html markup. Than create image map content, using your new image map as the reference.</p>
+        <p> Please note, the image map content uses the image map html markup to display the correct states/regions in the content creation screen.</p>
+        <p> Give each <area> a classname to be displayed in the image map content creation screen. </p>
+      ');
+  }
+
+
+}
+
+
+/**
+ * Implements hook_form_alter().
+ */
+function interactive_map_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  /* @var Drupal\Core\Entity\FieldableEntityInterface $entity */
+  $formObject = $form_state->getFormObject();
+  if ($formObject instanceof \Drupal\Core\Entity\EntityFormInterface) {
+    $entity = $formObject->getEntity();
+    if (
+      $entity->getEntityTypeId() === 'node'
+      //If the form type is a image_map_content
+      && $entity->bundle() == 'image_map_content'
+    ) {
+
+
+
+
+      //We want to pass over some variables to our JS code that way it can easily display the right classes
+      //inside of the field_regions dropdown menu
+
+      //Get all Image Map node IDs.
+      $query = \Drupal::entityTypeManager()->getStorage('node')->getQuery();
+      $image_map_nids = $query->condition('type', 'image_map')->execute();
+      //Load all Image Map nodes.
+      $image_map_nodes = \Drupal\node\Entity\Node::loadMultiple($image_map_nids);
+      $map_markup = new DOMDocument();
+      $attatched_settings = [
+        'regions' => [],
+      ];
+      foreach ($image_map_nodes as $node) {
+        //Get the raw HTML from the image map markup and parse it for the <areas>
+        //Make a new array under the attatched_settings array for each image map to store its allowed region options
+        $attatched_settings['regions'][strval($node->id())] = [];
+        $map_markup->loadHTML($node->get('field_map_markup')->getString());
+        $searchNode = $map_markup->getElementsByTagName("area");
+        foreach( $searchNode as $search ) {
+          //Get all the class="__" attributes from the <areas>
+          $class_name = $search->getAttribute('class');
+          if ($class_name != "") {
+            array_push($attatched_settings['regions'][strval($node->id())],$class_name);
+          }
+        }
+      }
+
+
+      $form['#attached']['library'][] = 'interactive_map/image_map_content_lib';
+      $form['#attached']['drupalSettings']['interactive_map']['image_map_content_lib'] = $attatched_settings;
+    }
+  }
+}
+
+
+
+/**
+ * Set dynamic allowed values for the alignment field.
+ *
+ * @param \Drupal\field\Entity\FieldStorageConfig $definition
+ *   The field definition.
+ * @param \Drupal\Core\Entity\ContentEntityInterface|null $entity
+ *   The entity being created if applicable.
+ * @param bool $cacheable
+ *   Boolean indicating if the results are cacheable.
+ *
+ * @return array
+ *   An array of possible key and value options.
+ *
+ * @see options_allowed_values()
+ */
+
+ use Drupal\Core\Entity\ContentEntityInterface;
+ use Drupal\field\Entity\FieldStorageConfig;
+
+function interactive_map_allowed_values_function(FieldStorageConfig $definition, ContentEntityInterface $entity = NULL, $cacheable) {
+  $options = [
+    'left' => 'Left',
+    'right' => 'Right',
+  ];
+
+  //Get all Image Map node IDs.
+  $query = \Drupal::entityTypeManager()->getStorage('node')->getQuery();
+  $image_map_nids = $query->condition('type', 'image_map')->execute();
+  //Load all Image Map nodes.
+  $image_map_nodes = \Drupal\node\Entity\Node::loadMultiple($image_map_nids);
+  $map_markup = new DOMDocument();
+  foreach ($image_map_nodes as $node) {
+    //Get the raw HTML from the image map markup and parse it for the <areas>
+    //Make a new array under the attatched_settings array for each image map to store its allowed region options
+    $map_markup->loadHTML($node->get('field_map_markup')->getString());
+    $searchNode = $map_markup->getElementsByTagName("area");
+    foreach( $searchNode as $search ) {
+      //Get all the class="__" attributes from the <areas>
+      $class_name = $search->getAttribute('class');
+      if ($class_name != "") {
+        $options[$class_name] = $class_name;
+      }
+    }
+  }
+
+
+  return $options;
+}
+
+
+ /**
+  * Implements hook_theme().
+  */
+function interactive_map_preprocess_node__image_map(&$variables) {
+
+  $parent_node = $variables['node'];
+
+  $query = \Drupal::entityTypeManager()->getStorage('node')->getQuery();
+
+  // Get all Image Map Content node IDs.
+  $image_map_content_nids = $query->condition('type', 'image_map_content')->execute();
+  // Load all Image Map Content nodes.
+  $image_map_content_nodes = \Drupal\node\Entity\Node::loadMultiple($image_map_content_nids);
+  $variables['image_map_content_nodes'] = [];
+  foreach ($image_map_content_nodes as $node) {
+    /**
+     * There is no need to send over every image map content node. Send over just the ones that have
+     * the field map reference value that equals the current node ID
+     **/
+    if ($node->get('field_map_reference')->getString() == strval($parent_node->id())) {
+      array_push($variables['image_map_content_nodes'], $node);
+    }
+  }
+
+  //We also want to know what the name of the <map> is so we can tell the <img> tag to use it.
+  //If they never set the markup for some reason just ignore
+  if ($parent_node->get('field_map_markup')->getString() != "") {
+    $map_markup = new DOMDocument();
+    $map_markup->loadHTML($parent_node->get('field_map_markup')->getString());
+    //There should only ever be one <map> tag.
+    $map_node = $map_markup->getElementsByTagName("map");
+    $map_node = $map_node->item(0);
+    $variables['image_map_mapname'] = $map_node->getAttribute('name');
+
+
+
+  }
+
+
+  //Also include our libary image_map_lib that way we can dynamically expand state/region menus + make map interactive
+  $variables['#attached']['library'][] =  'interactive_map/image_map_lib';
+}
+
+function interactive_map_theme($existing, $type, $theme, $path) {
+  return [
+    'node__image_map' => [
+      'template' => 'node--image_map',
+      'base hook' => 'node',
+      'path' => drupal_get_path('module','interactive_map') . '/templates',
+      'variables' => [
+          'description' => "Test",
+          'test' => "Test",
+      ]
+    ],
+  ];
+}

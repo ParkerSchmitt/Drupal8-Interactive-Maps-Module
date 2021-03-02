@@ -1,0 +1,29 @@
+# @Author: Parker Schmitt <parker>
+# @Date:   26-Feb-2021
+# @Email:  parker.c.schmitt@gmail.com
+# @Filename: field.storage.node.field_region.yml
+# @Last modified by:   parker
+# @Last modified time: 26-Feb-2021
+langcode: en
+status: true
+dependencies:
+  module:
+    - node
+    - options
+  enforced:
+    module:
+      - interactive_map
+id: node.field_region
+field_name: field_region
+entity_type: node
+type: list_string
+settings:
+  allowed_values: {  }
+  allowed_values_function: 'interactive_map_allowed_values_function'
+module: options
+locked: false
+cardinality: 1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

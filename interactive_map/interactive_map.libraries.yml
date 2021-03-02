@@ -1,0 +1,23 @@
+# @Author:                        Parker Schmitt <parker>
+# @Date:                          24-Feb-2021
+# @Email:                         parker.c.schmitt@gmail.com
+# @Filename:                      interactive_map.libraries.yml
+# @Last modified by:   parker
+# @Last modified time: 26-Feb-2021
+image_map_content_lib:
+  version:                        1.x
+  header:                         true
+  js:
+    js/image_map_content_form.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
+image_map_lib:
+  version:                        1.x
+  header:                         true
+  js:
+    js/jquery.maphilight.min.js:  {}
+    js/image_map.js:              {}
+  dependencies:
+    - core/jquery
+    - core/drupalSettings
