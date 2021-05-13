@@ -4,9 +4,8 @@
  * @Email:  parker.c.schmitt@gmail.com
  * @Filename: image_map.js
  * @Last modified by:   parker
- * @Last modified time: 25-Feb-2021
+ * @Last modified time: 026-Mar-2021
  */
-
 
 
 /* This JS creates interactive fuctionality to the image_map node (i.e. when someone goes and looks at an image map)
@@ -17,12 +16,12 @@
 (function($) {
 
   $(document).ready(function() {
-    $(".toggle-list-title").click(function() {
-      $(this).find("ul").toggle("fast", function() {
-      });
-    });
-
     //Add hilighting when <area> is moused over.
+
+    //If the window is less than 750px they are on a mobile device and the interactive_map
+    //should be able to hilight on that screen, as it is to small to use properly. 
+    if($(window).width() > 750) {
+
     $('img[usemap]').maphilight();
     $("area").on('click', function(event) {
       if ($(this).attr("class") != null && $(this).attr("class")) {
@@ -33,12 +32,34 @@
             //Change the location after the animation otherwise it will scroll down instantly.
             window.location.hash = hash;
           });
+          $(hash).parent().find("h3").parent().addClass("active");
           $(hash).parent().find("ul").toggle(true);
+        } else {
+          //Alert the user that there has not been any content created for this <area>
+          // alert(drupalSettings.interactive_map.image_map_lib.unavaiable_message); * deprecreated
+          //We are using sweet alert to provide this functionality
+          var alertInfo = document.createElement('div');
+          alertInfo.innerHTML = drupalSettings.interactive_map.image_map_lib.unavaiable_message;
+          swal({
+            title: "Alert",
+            content: alertInfo,
+          });
         }
       }
 
 
     });
+
+    /*If the screen width is less than 750px we are going to hide the map for easier access.
+     *Unfortuntely the MapHilight addon makes a parent div around our image so we can't use
+     *CSS media queries to hide our image*/
+    /*if($(window).width() < 750) {
+    $('img[usemap]').parent().hide();
+    } else {
+    $('img[usemap]').parent().show();
+    }*/
+
+  }
 
 
   });
