@@ -9,6 +9,8 @@ status: true
 dependencies:
   config:
     - field.field.node.image_map.body
+    - field.field.node.image_map.field_footer
+
     - field.field.node.image_map.field_image
     - field.field.node.image_map.field_map_markup
     - node.type.image_map
@@ -28,6 +30,14 @@ content:
     settings: {  }
     third_party_settings: {  }
     region: content
+field_footer:
+  weight: 8
+  settings:
+    rows: 5
+    placeholder: ''
+  third_party_settings: {  }
+  type: text_textarea
+  region: content  
   field_image:
     weight: 102
     label: above

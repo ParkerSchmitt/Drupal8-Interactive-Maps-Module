@@ -1,0 +1,23 @@
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.storage.node.field_footer
+    - node.type.image_map
+  module:
+    - text
+  enforced:
+    module:
+      - interactive_map
+id: node.image_map.field_footer
+field_name: field_footer
+entity_type: node
+bundle: image_map
+label: Footer
+description: ''
+required: false
+translatable: false
+default_value: {  }
+default_value_callback: ''
+settings: {  }
+field_type: text_long
