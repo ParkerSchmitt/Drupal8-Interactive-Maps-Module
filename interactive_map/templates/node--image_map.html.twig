@@ -1,12 +1,28 @@
 {{node.body.value | raw }}
-<img src="{{ file_url(node.field_image.entity.uri.value) }}" alt="{{ node.field_image.alt }}" usemap="#{{ image_map_mapname }}"/>
+<div class="interactive_map">
+  <img src="{{ file_url(node.field_image.entity.uri.value) }}" alt="{{ node.field_image.alt }}" usemap="#{{ image_map_mapname }}"/>
+</div>
+{{node.field_footer.value | raw }}
+
+
 
 {{node.field_map_markup.value | raw }}
 
 <h1> Resources </h1>
 
-<ul class="toggle-list">
+
+  {% set prev_char = ' ' %}
   {% for image_map_node in image_map_content_nodes %}
+    {% if image_map_node.title.value|slice(0, 1)|upper != prev_char %}
+      {% if prev_char != ' ' %}
+        </ul>
+      {% endif %}
+
+      <h1> {{ image_map_node.title.value|slice(0, 1)|upper }} </h1>
+      <ul class="toggle-list">
+      {% set prev_char = image_map_node.title.value|slice(0, 1)|upper %}
+    {% endif %}
+
     <li class="toggle-list-title">
       <h3 id= "{{image_map_node.field_region.value}}"> {{ image_map_node.title.value }} </h3>
       <ul>
@@ -16,4 +32,3 @@
       </ul>
     </li>
   {% endfor %}
-</ul>
