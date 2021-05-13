@@ -4,11 +4,13 @@
 # @Email:  parker.c.schmitt@gmail.com
 # @Filename: interactive_map.module
 # @Last modified by:   parker
-# @Last modified time: 02-Mar-2021
+# @Last modified time: 13-May-2021
 
 
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\Entity\Node;
+use Drupal\Core\Cache\Cache;
+
 
 /**
  * Implements hook_help().
@@ -16,8 +18,6 @@ use Drupal\node\Entity\Node;
 function interactive_map_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     case 'help.page.interactive_map':
-
-
       return t('
         <h2>Interactive Map Generator</h2>
         <h3>Instructions</h3>
@@ -34,57 +34,126 @@ function interactive_map_help($route_name, RouteMatchInterface $route_match) {
 
 /**
  * Implements hook_form_alter().
+ * Reroutes the two different forms into their own form altering methods. Makes the code easier to manage.
  */
 function interactive_map_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
   /* @var Drupal\Core\Entity\FieldableEntityInterface $entity */
   $formObject = $form_state->getFormObject();
   if ($formObject instanceof \Drupal\Core\Entity\EntityFormInterface) {
     $entity = $formObject->getEntity();
-    if (
-      $entity->getEntityTypeId() === 'node'
-      //If the form type is a image_map_content
-      && $entity->bundle() == 'image_map_content'
-    ) {
-
-      //We want to pass over some variables to our JS code that way it can easily display the right classes
-      //inside of the field_regions dropdown menu
-
-      //Get all Image Map node IDs.
-      $query = \Drupal::entityTypeManager()->getStorage('node')->getQuery();
-      $image_map_nids = $query->condition('type', 'image_map')->execute();
-      //Load all Image Map nodes.
-      $image_map_nodes = \Drupal\node\Entity\Node::loadMultiple($image_map_nids);
-      $map_markup = new DOMDocument();
-      $attatched_settings = [
-        'regions' => [],
-      ];
-      foreach ($image_map_nodes as $node) {
-        //Get the raw HTML from the image map markup and parse it for the <areas>
-        //Make a new array under the attatched_settings array for each image map to store its allowed region options
-        $attatched_settings['regions'][strval($node->id())] = [];
-        $map_markup->loadHTML($node->get('field_map_markup')->getString());
-        $searchNode = $map_markup->getElementsByTagName("area");
-        foreach( $searchNode as $search ) {
-          //Get all the class="__" attributes from the <areas>
-          $class_name = $search->getAttribute('class');
-          /*Make sure that the class name isn't blank and that the class isn't already inside of the array.
-           *Duplicates don't hurt the functionality of the program but it does make the dropdown menu more confusing
-           *for users to work with.
-           */
-          if ($class_name != "" && !in_array($class_name,$attatched_settings['regions'][strval($node->id())])) {
-            array_push($attatched_settings['regions'][strval($node->id())],$class_name);
-          }
-        }
+    if ($entity->getEntityTypeId() === 'node') {
+      switch($entity->bundle()) {
+        //If it is a image_map_content form
+        case 'image_map_content':
+          interative_map_image_map_content_alter($form,$form_state,$form_id);
+          break;
+        //If it is an image_map form
+        case 'image_map':
+          interative_map_image_map_alter($form,$form_state,$form_id);
+          break;
       }
-
-
-      $form['#attached']['library'][] = 'interactive_map/image_map_content_lib';
-      $form['#attached']['drupalSettings']['interactive_map']['image_map_content_lib'] = $attatched_settings;
     }
   }
 }
 
 
+function interative_map_image_map_content_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+        //We want to pass over some variables to our JS code that way it can easily display the right classes
+        //inside of the field_regions dropdown menu
+
+        //Get all Image Map node IDs.
+        $query = \Drupal::entityTypeManager()->getStorage('node')->getQuery();
+        $image_map_nids = $query->condition('type', 'image_map')->execute();
+        //Load all Image Map nodes.
+        $image_map_nodes = \Drupal\node\Entity\Node::loadMultiple($image_map_nids);
+        $map_markup = new DOMDocument();
+        $attatched_settings = [
+          'regions' => [],
+        ];
+        foreach ($image_map_nodes as $node) {
+          //Get the raw HTML from the image map markup and parse it for the <areas>
+          //Make a new array under the attatched_settings array for each image map to store its allowed region options
+          $attatched_settings['regions'][strval($node->id())] = [];
+          $map_markup->loadHTML($node->get('field_map_markup')->getString());
+          $searchNode = $map_markup->getElementsByTagName("area");
+          foreach( $searchNode as $search ) {
+            //Get all the class="__" attributes from the <areas>
+            $class_name = $search->getAttribute('class');
+            /*Make sure that the class name isn't blank and that the class isn't already inside of the array.
+            *Duplicates don't hurt the functionality of the program but it does make the dropdown menu more confusing
+            *for users to work with.
+            */
+            if ($class_name != "" && !in_array($class_name,$attatched_settings['regions'][strval($node->id())])) {
+              array_push($attatched_settings['regions'][strval($node->id())],$class_name);
+            }
+          }
+        }
+
+        foreach (array_keys($form['actions']) as $action) {
+          if ($action != 'preview' && isset($form['actions'][$action]['#type']) && $form['actions'][$action]['#type'] === 'submit') {
+            $form['actions'][$action]['#submit'][] = 'interactive_map_content_submit';
+          }
+        }
+
+        $form['#attached']['library'][] = 'interactive_map/image_map_content_lib';
+        $form['#attached']['drupalSettings']['interactive_map']['image_map_content_lib'] = $attatched_settings;
+}
+
+function interative_map_image_map_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  //The module doesn't really have to alter the form at all; but we do want to make sure it gets validated.
+  $form['#validate'][] = 'interactive_map_form_validate';
+
+}
+
+function interactive_map_form_validate($form, &$form_state) {
+  //We don't want to check validation on a remove request; as it sends blank info in the form_state that will throw errors.
+  if (strpos(\Drupal::service('path.current')->getPath(), '/add') !== FALSE || strpos(\Drupal::service('path.current')->getPath(), '/edit') !== FALSE) {
+    try {
+      $map_markup = new DOMDocument();
+      //Get the value inside of the map_markup field
+      $tmp = strval($form_state->cleanValues()->getValue("field_map_markup")[0]["value"]);
+      $map_markup->loadHTML($tmp);
+        //The map markup MUST have an area tag.
+        if (count($map_markup->getElementsByTagName("map")) == 1) {
+          $map = $map_markup->getElementsByTagName("map")[0];
+          //If there are no area tags throw an erorr
+          if (count($map->getElementsByTagName("area")) < 1) {   
+            $form_state->setErrorByName('field_map_markup', t('Form not submitted. Markup must have atleast one area child tag'));
+          } else {
+            //Get all the <area> tags inside of the map
+            $areas = $map->getElementsByTagName("area");
+            foreach( $areas as $area ) {
+              //If there is no class attribute defined throw an error
+              if($area->getAttribute('class') == "") {
+                $form_state->setErrorByName('field_map_markup', t('Form not submitted. Area tag must have class name defined.'));
+              }
+              //If there is no coords attribute defined throw an error
+              if($area->getAttribute('coords') == "") {
+                $form_state->setErrorByName('field_map_markup', t('Form not submitted. Area tag must have coords defined.'));
+              }
+            }
+          }
+        //If there is 0 or more than one map tags throw an error
+        } else {
+          $form_state->setErrorByName('field_map_markup', t('Invalid Map Markup. Must include one map tag'));
+        }
+        //Catch any exceptions dealing with the DOMDocument and throw an error
+    } catch (Exception $e) {
+      $form_state->setErrorByName('field_map_markup', t('Exception caught: ' . $e->getMessage() . ' Please report to your site administrator.'));
+    }
+  }
+ }
+
+
+
+/* Method called whenevever a image_map_content node is submitted*/
+function interactive_map_content_submit(array $form, \Drupal\Core\Form\FormStateInterface $form_state) {
+  //Load up the image map node from the field_map_reference use use it's ID to clear the cache.
+  $node = $form_state->getFormObject()->getEntity();
+  \Drupal::logger('interactive_map')->notice('Image map content changed. Rebuilding image_map nodes.');
+  $tags = ['node:' . $node->get('field_map_reference')->getString()];
+  Cache::invalidateTags($tags);
+}
 
 /**
  * Set dynamic allowed values for the alignment field.
@@ -107,6 +176,10 @@ function interactive_map_form_alter(&$form, \Drupal\Core\Form\FormStateInterface
 
 function interactive_map_allowed_values_function(FieldStorageConfig $definition, ContentEntityInterface $entity = NULL, $cacheable) {
   $options = [];
+
+// Logs a notice
+\Drupal::logger('interactive_map')->notice("Test");
+
 
   //Get all Image Map node IDs.
   $query = \Drupal::entityTypeManager()->getStorage('node')->getQuery();
@@ -153,9 +226,16 @@ function interactive_map_preprocess_node__image_map(&$variables) {
      * the field map reference value that equals the current node ID
      **/
     if ($node->get('field_map_reference')->getString() == strval($parent_node->id())) {
+
       array_push($variables['image_map_content_nodes'], $node);
     }
   }
+
+  //Sort the array alphabetically by the parameter title.value
+  usort($variables['image_map_content_nodes'],
+      function($a, $b) {
+        return strncmp($a->getTitle(), $b->getTitle(),5);
+      });
 
   //We also want to know what the name of the <map> is so we can tell the <img> tag to use it.
   //If they never set the markup for some reason just ignore
@@ -171,9 +251,13 @@ function interactive_map_preprocess_node__image_map(&$variables) {
 
   }
 
+  $attatched_settings = [
+    'unavaiable_message' => $parent_node->get('field_unavaiable_message')->getString(),
+  ];
 
   //Also include our libary image_map_lib that way we can dynamically expand state/region menus + make map interactive
   $variables['#attached']['library'][] =  'interactive_map/image_map_lib';
+  $variables['#attached']['drupalSettings']['interactive_map']['image_map_lib'] = $attatched_settings;
 }
 
 function interactive_map_theme($existing, $type, $theme, $path) {
