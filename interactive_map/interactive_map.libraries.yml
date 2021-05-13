@@ -17,6 +17,7 @@ image_map_lib:
   header:                         true
   js:
     js/jquery.maphilight.min.js:  {}
+    js/sweetalert.min.js : {}
     js/image_map.js:              {}
   dependencies:
     - core/jquery
