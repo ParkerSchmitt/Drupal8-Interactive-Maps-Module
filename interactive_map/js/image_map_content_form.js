@@ -4,7 +4,7 @@
  * @Email:  parker.c.schmitt@gmail.com
  * @Filename: test.js
  * @Last modified by:   parker
- * @Last modified time: 26-Feb-2021
+ * @Last modified time: 04-Mar-2021
  */
 
 /* We are implementing JS to allow the content type (image_map_content)'s field (field_regions) to be be
@@ -16,7 +16,7 @@
 
   $(document).ready(function() {
     //On load
-    if ($('#edit-field-map-reference').val() != "_none") {
+    if ($('#edit-field-map-reference').val() != "_none" && $('#-edit-field-region').val() == "_none") {
       UpdateRegionField($('#edit-field-map-reference').val());
     }
     //On edit
